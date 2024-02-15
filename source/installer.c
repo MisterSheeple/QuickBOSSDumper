@@ -121,7 +121,7 @@ u32 QuickBOSSDumper(void) {
     u32 sha256sum[8];
     snprintf(path_movable, sizeof(path_movable), "1:/private/movable.sed");
     if (FileGetData(path_movable, sd_keyy, 0x10, 0x110) == 0x10) {
-        snprintf(extraInfo, 32, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x");
+        snprintf(extraInfo, 32, "%16x%16x", (u64*)(sd_keyy)[0], (u64*)(sd_keyy)[1]);
         sha_quick(sha256sum, sd_keyy, 0x10, SHA256_MODE);
         DIR ctrnandRoot;
         int result;
