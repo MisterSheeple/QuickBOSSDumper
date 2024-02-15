@@ -209,6 +209,7 @@ u32 QuickBOSSDumper(void) {
     if (!partitionAValid && !partitionBValid) {
         snprintf(msgDump, 64, "dump failed code 0100"); // neither partitionA nor partitionB are valid
         statusDump = STATUS_RED;
+        return 1;
     }
 
     if (statusDump != STATUS_RED) {
@@ -217,5 +218,5 @@ u32 QuickBOSSDumper(void) {
     }
     ShowInstallerStatus();
     
-    return 1;
+    return 0;
 }

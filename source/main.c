@@ -30,6 +30,8 @@ void main(int argc, char** argv)
     u32 ret = QuickBOSSDumper();
     ShowInstallerStatus(); // update installer status one last time
     fs_deinit();
+    if (ret) ShowPrompt(false, "Dump failed!\nCheck lower screen for info.");
+    else ShowPrompt(false, "Dump success!");
     ClearScreenF(true, true, COLOR_STD_BG);
     Reboot();
 }
