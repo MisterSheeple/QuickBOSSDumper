@@ -37,29 +37,15 @@
 #define align(v,a) \
     (((v) % (a)) ? ((v) + (a) - ((v) % (a))) : (v))
 
-// SafeB9SInstaller version
-#define VERSION     "0.0.7"
+#define INPUT_PATH  "0:/test"
 
-// name of the FIRM to install (also name of the input path)
-#ifndef OPEN_INSTALLER
-#define NAME_FIRM   "boot9strap"
-#else
-#define NAME_FIRM   "sighax"
-#endif
-
-// input / output paths
-#define INPUT_PATH  "0:/" NAME_FIRM
+// QuickBOSSDumper version
+#define VERSION     "0.0.1"
 
 // cosmetic stuff (for installer status)
-#ifndef OPEN_INSTALLER
-#define APP_TITLE   "SafeB9SInstaller" " v" VERSION
-#define APP_URL     "https://github.com/d0k3/SafeB9SInstaller"
-#define APP_USAGE   "Usage instructions: https://%s3ds.guide/", IS_DEVKIT ? "dev." : ""
-#else
-#define APP_TITLE   "OpenFirmInstaller" " v" VERSION
-#define APP_URL     "https://github.com/d0k3/SafeB9SInstaller"
-#define APP_USAGE   "Based on SafeB9SInstaller by d0k3"
-#endif
+#define APP_TITLE   "QuickBOSSDumper" " v" VERSION
+#define APP_URL     "https://github.com/TraceEntertains/QuickBOSSDumper"
+#define APP_USAGE   ""
 
 // buffer area defines (big buffer for firm)
 #define WORK_BUFFER         ((u8*) 0x21000000)

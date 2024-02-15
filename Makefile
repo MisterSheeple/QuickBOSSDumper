@@ -18,9 +18,9 @@ include $(DEVKITARM)/ds_rules
 #---------------------------------------------------------------------------------
 export TARGET	:=	SafeB9SInstaller
 BUILD		:=	build
-SOURCES		:=	source source/common source/fs source/crypto source/fatfs source/nand source/safety
+SOURCES		:=	source source/common source/fs source/crypto source/fatfs source/nand source/safety source/gm9
 DATA		:=	data
-INCLUDES	:=	source source/common source/font source/fs source/crypto source/fatfs source/nand source/safety
+INCLUDES	:=	source source/common source/font source/fs source/crypto source/fatfs source/nand source/safety source/gm9
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -33,7 +33,7 @@ CFLAGS	:=	-g -Wall -Wextra -Wpedantic -Wcast-align -Wno-main -O2\
 
 CFLAGS	+=	$(INCLUDE) -DARM9
 
-CFLAGS	+=	-DBUILD_NAME="\"$(TARGET) (`date +'%Y/%m/%d'`)\""
+CFLAGS	+=	-DBUILD_NAME="$(TARGET)"
 
 ifeq ($(FONT),ORIG)
 CFLAGS	+=	-DFONT_ORIGINAL

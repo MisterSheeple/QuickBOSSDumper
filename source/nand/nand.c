@@ -1,11 +1,10 @@
 #include "nand.h"
-#include "keydb.h"
 #include "aes.h"
 #include "sha.h"
 #include "fatmbr.h"
 #include "unittype.h"
 #include "sdmmc.h"
-
+#include "keydb.h"
 
 #define KEY95_SHA256    ((IS_DEVKIT) ? slot0x11Key95dev_sha256 : slot0x11Key95_sha256)
 
