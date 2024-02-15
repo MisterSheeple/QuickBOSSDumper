@@ -28,7 +28,7 @@ static int  statusDump         = STATUS_GREY;
 static char msgSdCard[64]      = "not started";
 static char msgSector[64]      = "not started";
 static char msgDump[64]        = "not started";
-static char msgDump2[70]       = "";
+static char extraInfo[70]       = "";
     
 size_t FileGetData(const char* path, void* data, size_t size, size_t foffset) {
     UINT br;
@@ -52,7 +52,7 @@ u32 ShowInstallerStatus(void) {
     DrawStringF(BOT_SCREEN, pos_x0, pos_y0 + (1*stp), COLOR_STD_FONT, COLOR_STD_BG, "MicroSD Card   -");
     //DrawStringF(BOT_SCREEN, pos_x0, pos_y0 + (2*stp), COLOR_STD_FONT, COLOR_STD_BG, "Secret Sector  -");
     DrawStringF(BOT_SCREEN, pos_x0, pos_y0 + (3*stp), COLOR_STD_FONT, COLOR_STD_BG, "BOSS Dump      -");
-    DrawStringF(BOT_SCREEN, pos_x0, pos_y0 + (4*stp), COLOR_STD_FONT, COLOR_STD_BG, msgDump2);
+    DrawStringF(BOT_SCREEN, pos_x0, pos_y0 + (4*stp), COLOR_STD_FONT, COLOR_STD_BG, extraInfo);
 
     DrawStringF(BOT_SCREEN, pos_x1, pos_y0 + (1*stp), COLOR_STATUS(statusSdCard) , COLOR_STD_BG, "%-21.21s", msgSdCard );
     //DrawStringF(BOT_SCREEN, pos_x1, pos_y0 + (2*stp), COLOR_STATUS(statusSector) , COLOR_STD_BG, "%-21.21s", msgSector );
@@ -115,12 +115,13 @@ u32 QuickBOSSDumper(void) {
     statusDump = STATUS_YELLOW;
 
     // from gm9 to get the path we need
-    //char bossSavePath[256];
+    
     u8 sd_keyy[0x10] __attribute__((aligned(4)));
     char path_movable[32];
     u32 sha256sum[8];
     snprintf(path_movable, sizeof(path_movable), "1:/private/movable.sed");
     if (FileGetData(path_movable, sd_keyy, 0x10, 0x110) == 0x10) {
+        snprintf(extraInfo, 32, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x");
         sha_quick(sha256sum, sd_keyy, 0x10, SHA256_MODE);
         DIR ctrnandRoot;
         int result;
@@ -129,7 +130,8 @@ u32 QuickBOSSDumper(void) {
     }
     else memset(sha256sum, 0, 32);
 
-    snprintf(msgDump2, sizeof(msgDump2), "1:/data/%08lx%08lx%08lx%08lx/sysdata/00010034/00000000",
+    char bossSavePath[256];
+    snprintf(bossSavePath, sizeof(bossSavePath), "1:/data/%08lx%08lx%08lx%08lx/sysdata/00010034/00000000",
     sha256sum[0], sha256sum[1], sha256sum[2], sha256sum[3]);
 
     //if (f_stat())
@@ -140,17 +142,17 @@ u32 QuickBOSSDumper(void) {
     bool partitionAValid = true;
     bool partitionBValid = false;
 
-    if ((GetDisaDiffRWInfo(msgDump2, &partitionAInfo, false) != 0) ||
+    if ((GetDisaDiffRWInfo(bossSavePath, &partitionAInfo, false) != 0) ||
         (!(partitionAInfo.dpfs_lvl2_cache = (u8*) malloc(partitionAInfo.size_dpfs_lvl2)) ||
-        (BuildDisaDiffDpfsLvl2Cache(msgDump2, &partitionAInfo, partitionAInfo.dpfs_lvl2_cache, partitionAInfo.size_dpfs_lvl2) != 0))) {
+        (BuildDisaDiffDpfsLvl2Cache(bossSavePath, &partitionAInfo, partitionAInfo.dpfs_lvl2_cache, partitionAInfo.size_dpfs_lvl2) != 0))) {
         free(partitionAInfo.dpfs_lvl2_cache);
         partitionAValid = false;
    }
 
-    if ((GetDisaDiffRWInfo(msgDump2, &partitionBInfo, true) == 0)) {
+    if ((GetDisaDiffRWInfo(bossSavePath, &partitionBInfo, true) == 0)) {
         partitionBValid = true;
         if (!(partitionBInfo.dpfs_lvl2_cache = (u8*) malloc(partitionBInfo.size_dpfs_lvl2)) ||
-            (BuildDisaDiffDpfsLvl2Cache(msgDump2, &partitionBInfo, partitionBInfo.dpfs_lvl2_cache, partitionBInfo.size_dpfs_lvl2) != 0)) {
+            (BuildDisaDiffDpfsLvl2Cache(bossSavePath, &partitionBInfo, partitionBInfo.dpfs_lvl2_cache, partitionBInfo.size_dpfs_lvl2) != 0)) {
             if (partitionAInfo.dpfs_lvl2_cache) free(partitionAInfo.dpfs_lvl2_cache);
             partitionBValid = false;
         }
@@ -162,7 +164,7 @@ u32 QuickBOSSDumper(void) {
             snprintf(msgDump, 64, "dump failed code 0011"); // couldnt allocate memory (partitionA)
             statusDump = STATUS_RED;
         } else {
-            if (ReadDisaDiffIvfcLvl4(msgDump2, &partitionAInfo, 0, partitionAInfo.size_ivfc_lvl4, buffer) != 0) {
+            if (ReadDisaDiffIvfcLvl4(bossSavePath, &partitionAInfo, 0, partitionAInfo.size_ivfc_lvl4, buffer) != 0) {
                 FIL fp;
 
                 if (f_open(&fp, "0:/partitionA.bin", FA_WRITE) == FR_OK) f_write(&fp, buffer, partitionAInfo.size_ivfc_lvl4, NULL);
@@ -187,7 +189,7 @@ u32 QuickBOSSDumper(void) {
             snprintf(msgDump, 64, "dump failed code 0021"); // couldnt allocate memory (partitionB)
             statusDump = STATUS_RED;
         } else {
-            if (ReadDisaDiffIvfcLvl4(msgDump2, &partitionBInfo, 0, partitionBInfo.size_ivfc_lvl4, buffer) != 0) {
+            if (ReadDisaDiffIvfcLvl4(extraInfo, &partitionBInfo, 0, partitionBInfo.size_ivfc_lvl4, buffer) != 0) {
                 FIL fp;
 
                 if (f_open(&fp, "0:/partitionB.bin", FA_WRITE) == FR_OK) f_write(&fp, buffer, partitionBInfo.size_ivfc_lvl4, NULL);
